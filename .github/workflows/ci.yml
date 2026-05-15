@@ -20,10 +20,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/checkout@v4
+        with:
+          repository: deagentic/cornerstone
+          token: ${{ secrets.GH_PAT }}
+          path: .cornerstone-src
       - name: Install cornerstone
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
+        run: pip install ./.cornerstone-src
       - name: Run gitflow-gate
         run: cornerstone gitflow-gate
 
@@ -38,10 +41,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/checkout@v4
+        with:
+          repository: deagentic/cornerstone
+          token: ${{ secrets.GH_PAT }}
+          path: .cornerstone-src
       - name: Install cornerstone
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
+        run: pip install ./.cornerstone-src
       - name: Run semver-gate
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -62,10 +68,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/checkout@v4
+        with:
+          repository: deagentic/cornerstone
+          token: ${{ secrets.GH_PAT }}
+          path: .cornerstone-src
       - name: Install cornerstone
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
+        run: pip install ./.cornerstone-src
       - name: Run commit-gate
         run: cornerstone commit-gate --message "${{ github.event.head_commit.message }}"
 
@@ -76,10 +85,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/checkout@v4
+        with:
+          repository: deagentic/cornerstone
+          token: ${{ secrets.GH_PAT }}
+          path: .cornerstone-src
       - name: Install cornerstone
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
+        run: pip install ./.cornerstone-src
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
