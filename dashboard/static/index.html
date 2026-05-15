@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lodge Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+    h1 { font-size: 1.5rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-bottom: 2rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 1.25rem; }
+    .card-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .card-value { font-size: 2rem; font-weight: 700; color: #38bdf8; }
+    .card-value.green { color: #34d399; }
+    .card-value.amber { color: #fbbf24; }
+    .card-value.red { color: #f87171; }
+    .section { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section h2 { font-size: 1rem; font-weight: 600; color: #cbd5e1; margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { text-align: left; color: #64748b; font-weight: 500; padding: 0.5rem 0.75rem; border-bottom: 1px solid #334155; }
+    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #1e293b; }
+    tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+    .badge-blue { background: #1d4ed8; color: #bfdbfe; }
+    .badge-green { background: #065f46; color: #6ee7b7; }
+    .controls { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+    input, select { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+    button { background: #0284c7; color: white; border: none; border-radius: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; cursor: pointer; font-weight: 600; }
+    button:hover { background: #0369a1; }
+    .error { color: #f87171; font-size: 0.875rem; padding: 0.5rem 0; }
+    .loading { color: #64748b; font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+  <h1>Lodge Dashboard</h1>
+  <p class="subtitle" id="last-updated">Cargando...</p>
+
+  <div class="controls">
+    <div>
+      <label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:0.25rem">Proyecto</label>
+      <input id="filter-project" type="text" placeholder="Todos" style="width:180px" />
+    </div>
+    <div>
+      <label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:0.25rem">Desde</label>
+      <input id="filter-from" type="date" />
+    </div>
+    <div>
+      <label style="font-size:0.75rem;color:#64748b;display:block;margin-bottom:0.25rem">Hasta</label>
+      <input id="filter-to" type="date" />
+    </div>
+    <div style="margin-top:1.25rem">
+      <button onclick="loadData()">Actualizar</button>
+    </div>
+  </div>
+
+  <div id="error" class="error" style="display:none"></div>
+
+  <div class="grid" id="kpi-grid">
+    <div class="card"><div class="card-label">Proyectos generados</div><div class="card-value" id="kpi-projects">—</div></div>
+    <div class="card"><div class="card-label">Skills invocados</div><div class="card-value" id="kpi-skills">—</div></div>
+    <div class="card"><div class="card-label">Runs CI (total)</div><div class="card-value" id="kpi-ci-total">—</div></div>
+    <div class="card"><div class="card-label">CI pass rate</div><div class="card-value green" id="kpi-ci-pass">—</div></div>
+    <div class="card"><div class="card-label">Costo estimado (USD)</div><div class="card-value amber" id="kpi-cost">—</div></div>
+    <div class="card"><div class="card-label">Conocimiento creado</div><div class="card-value" id="kpi-know-created">—</div></div>
+    <div class="card"><div class="card-label">Conocimiento usado</div><div class="card-value" id="kpi-know-used">—</div></div>
+    <div class="card"><div class="card-label">Herramientas ejecutadas</div><div class="card-value" id="kpi-tools">—</div></div>
+  </div>
+
+  <div class="section">
+    <h2>Top Skills</h2>
+    <table>
+      <thead><tr><th>Skill</th><th>Invocaciones</th></tr></thead>
+      <tbody id="table-skills"><tr><td colspan="2" class="loading">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Costo por Modelo</h2>
+    <table>
+      <thead><tr><th>Modelo</th><th>Invocaciones</th><th>Costo estimado (USD)</th></tr></thead>
+      <tbody id="table-models"><tr><td colspan="3" class="loading">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    function fmt(n) { return n.toLocaleString("es-MX"); }
+    function fmtCost(n) { return n < 0.01 ? n.toFixed(6) : n.toFixed(4); }
+
+    function setDefault() {
+      const to = new Date();
+      const from = new Date(to);
+      from.setDate(from.getDate() - 30);
+      document.getElementById("filter-from").value = from.toISOString().slice(0, 10);
+      document.getElementById("filter-to").value = to.toISOString().slice(0, 10);
+    }
+
+    async function loadData() {
+      document.getElementById("error").style.display = "none";
+      const project = document.getElementById("filter-project").value.trim();
+      const from = document.getElementById("filter-from").value;
+      const to = document.getElementById("filter-to").value;
+
+      const params = new URLSearchParams();
+      if (project) params.set("project_slug", project);
+      if (from) params.set("from", from + "T00:00:00Z");
+      if (to) params.set("to", to + "T23:59:59Z");
+
+      try {
+        const res = await fetch(`${API_BASE}/v1/summary?${params}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        document.getElementById("kpi-projects").textContent = fmt(d.projects_generated);
+        document.getElementById("kpi-skills").textContent = fmt(d.skills_invoked);
+        document.getElementById("kpi-ci-total").textContent = fmt(d.ci_runs.total);
+        const passRate = d.ci_runs.total ? Math.round(d.ci_runs.passed / d.ci_runs.total * 100) : 0;
+        document.getElementById("kpi-ci-pass").textContent = passRate + "%";
+        document.getElementById("kpi-cost").textContent = "$" + fmtCost(d.total_cost_usd);
+        document.getElementById("kpi-know-created").textContent = fmt(d.knowledge_created);
+        document.getElementById("kpi-know-used").textContent = fmt(d.knowledge_used);
+        document.getElementById("kpi-tools").textContent = fmt(d.tools_executed);
+
+        document.getElementById("table-skills").innerHTML = d.top_skills.length
+          ? d.top_skills.map(s => `<tr><td>${s.skill_name}</td><td>${fmt(s.count)}</td></tr>`).join("")
+          : "<tr><td colspan='2' style='color:#64748b'>Sin datos</td></tr>";
+
+        document.getElementById("table-models").innerHTML = d.top_models.length
+          ? d.top_models.map(m => `<tr><td><span class="badge badge-blue">${m.model}</span></td><td>${fmt(m.count)}</td><td>$${fmtCost(m.total_cost_usd)}</td></tr>`).join("")
+          : "<tr><td colspan='3' style='color:#64748b'>Sin datos</td></tr>";
+
+        document.getElementById("last-updated").textContent =
+          "Actualizado: " + new Date().toLocaleString("es-MX");
+      } catch (e) {
+        document.getElementById("error").textContent = "Error al cargar datos: " + e.message;
+        document.getElementById("error").style.display = "block";
+      }
+    }
+
+    setDefault();
+    loadData();
+  </script>
+</body>
+</html>

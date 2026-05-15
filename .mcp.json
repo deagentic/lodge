@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "cornerstone": {
+      "command": "cornerstone",
+      "args": ["--mode", "runtime", "mcp"],
+      "envFile": ".env",
+      "description": "Cornerstone Runtime knowledge server — ADRs, skills, conventions, sub-agents, tools. Query ADRs before designing anything new. Activate the correct skill before acting."
+    }
+  }
+}

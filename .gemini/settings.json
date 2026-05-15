@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ ! -d \".venv\" ]; then python3 -m venv .venv && .venv/bin/pip install -e \".[dev]\" && .venv/bin/cornerstone --mode runtime init && .venv/bin/cornerstone --mode runtime sync; fi"
+          },
+          {
+            "type": "command",
+            "command": "[ -f \".venv/bin/cornerstone\" ] && .venv/bin/cornerstone upgrade --check || true"
+          },
+          {
+            "type": "agent",
+            "statusMessage": "Bootstrap \u2014 loading agent context...",
+            "timeout": 60,
+            "prompt": "You are the Bootstrap Agent. Your sole purpose is to execute the mandatory session initialization protocol. Complete every step \u2014 do not skip any.\n\n## Step 1 \u2014 Read AGENTS.md\nRead `AGENTS.md` using the read_file tool. This is the Supreme Mandate and contains the project's context routing table.\n\n## Step 2 \u2014 Verify environment\nRun: `ls .venv 2>/dev/null && echo EXISTS || echo MISSING` using run_shell_command.\nIf MISSING, run the bootstrap sequence:\n```\npython3 -m venv .venv\n.venv/bin/pip install -e \".[dev]\"\n.venv/bin/cornerstone --mode runtime init\n.venv/bin/cornerstone --mode runtime sync\n```\n\n## Step 3 \u2014 Determine active context\nRun: `git status --porcelain | awk '{print $2}' | head -20` using run_shell_command.\nApply the routing table from the AGENTS.md you just read to identify which context file to load.\n\n## Step 4 \u2014 Load the context file\nRead the context file identified in Step 3 using the read_file tool.\n\n## Step 5 \u2014 Emit initialization report\nOutput ONLY this JSON and nothing else:\n```json\n{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"status\":\"bootstrap_complete\",\"venv\":\"<exists|bootstrapped>\",\"context\":\"<context-file-loaded>\",\"mandate\":\"Read AGENTS.md + context file before acting. ADR-First. Batch parallel ops. Route models by tier.\"}}\n```"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "GitOps Gate \u2014 checking for forbidden git operations...",
+            "command": ".venv/bin/cornerstone gitops-gate"
+          }
+        ]
+      }
+    ]
+  }
+}

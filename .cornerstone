@@ -1,0 +1,33 @@
+{
+  "starter": "api",
+  "capabilities": [
+    "server"
+  ],
+  "cookiecutter_vars": {
+    "project_name": "Lodge",
+    "project_slug": "lodge",
+    "package_name": "lodge",
+    "github_username": "myuser",
+    "description": "A FastAPI + PostgreSQL service scaffolded by Cornerstone",
+    "author": "DeAcero",
+    "python_version": "3.11",
+    "adr_path": "docs/adr",
+    "dashboard_title": "Lodge Dashboard",
+    "agentic_telemetry_url": "",
+    "cognitive_complexity_threshold": "11",
+    "enable_dashboard_auth": "no",
+    "enable_rtk": false,
+    "_copy_without_render": [
+      ".github/workflows/ci.yml"
+    ],
+    "_template": "/tmp/cornerstone-starter-f0f9lh4_/api",
+    "_output_dir": "/home/elcubonegro",
+    "_repo_dir": "/tmp/cornerstone-starter-f0f9lh4_/api",
+    "_checkout": null
+  },
+  "agents_repo": "https://github.com/deagentic/cornerstone-agents",
+  "agents_ref": "main",
+  "cornerstone_version": "0.13.0",
+  "template_version": "0.13.0",
+  "generated_at": "2026-05-15T05:42:13.171565Z"
+}

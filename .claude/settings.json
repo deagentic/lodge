@@ -1,0 +1,56 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "GitOps Gate — checking for forbidden git operations...",
+            "command": ".venv/bin/cornerstone gitops-gate"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "ADR Gate — checking architectural mandate...",
+            "command": "CORNERSTONE_ADR_PATH=docs/adr .venv/bin/python tools/adr_gate.py"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ ! -d \".venv\" ]; then python3 -m venv .venv && .venv/bin/pip install -e \".[dev]\" && .venv/bin/cornerstone --mode runtime init && .venv/bin/cornerstone --mode runtime sync; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ ! -d \".venv\" ]; then python3 -m venv .venv && .venv/bin/pip install -e \".[dev]\" && .venv/bin/cornerstone --mode runtime init && .venv/bin/cornerstone --mode runtime sync; fi"
+          },
+          {
+            "type": "command",
+            "command": "[ -f \".venv/bin/cornerstone\" ] && .venv/bin/cornerstone upgrade --check || true"
+          },
+          {
+            "type": "agent",
+            "statusMessage": "Bootstrap — loading agent context...",
+            "timeout": 60,
+            "prompt": "You are the Bootstrap Agent. Your sole purpose is to execute the mandatory session initialization protocol. Complete every step — do not skip any.\n\n## Step 1 — Read AGENTS.md\nRead `AGENTS.md` using the Read tool. This is the Supreme Mandate and contains the project's context routing table.\n\n## Step 2 — Verify environment\nRun: `ls .venv 2>/dev/null && echo EXISTS || echo MISSING`\nIf MISSING, run the bootstrap sequence:\n```\npython3 -m venv .venv\n.venv/bin/pip install -e \".[dev]\"\n.venv/bin/cornerstone --mode runtime init\n.venv/bin/cornerstone --mode runtime sync\n```\n\n## Step 3 — Determine active context\nRun: `git status --porcelain | awk '{print $2}' | head -20`\nApply the routing table from the AGENTS.md you just read to identify which context file to load.\n\n## Step 4 — Load the context file\nRead the context file identified in Step 3 using the Read tool.\n\n## Step 5 — Emit initialization report\nOutput ONLY this JSON and nothing else:\n```json\n{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"status\":\"bootstrap_complete\",\"venv\":\"<exists|bootstrapped>\",\"context\":\"<context-file-loaded>\",\"mandate\":\"Read AGENTS.md + context file before acting. ADR-First. Batch parallel ops. Route models by tier.\"}}\n```"
+          }
+        ]
+      }
+    ]
+  }
+}
