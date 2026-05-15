@@ -2,7 +2,7 @@ default_stages: [pre-commit, manual]
 
 repos:
     - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.4.0
+      rev: v0.4.10
       hooks:
         - id: ruff
           name: "ruff"
@@ -53,3 +53,17 @@ repos:
             entry: cornerstone check-mermaid
             files: \.mermaid$
             pass_filenames: true
+
+          - id: cornerstone-adr-gate
+            name: "ADR Gate (pre-push)"
+            language: system
+            entry: cornerstone adr-gate
+            pass_filenames: false
+            stages: [pre-push]
+
+          - id: cornerstone-commit-gate
+            name: "Commit Gate (commit-msg)"
+            language: system
+            entry: bash -c 'cornerstone commit-gate --message "$(cat $1)"' --
+            pass_filenames: true
+            stages: [commit-msg]
