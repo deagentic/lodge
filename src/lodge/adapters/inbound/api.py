@@ -5,10 +5,10 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
-
 from ...domain.config import settings
 from .routers import health, ingest, query
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 
 _AUTH_REALM = 'Basic realm="Lodge Dashboard"'
 
