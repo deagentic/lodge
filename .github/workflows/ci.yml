@@ -108,7 +108,7 @@ jobs:
     name: SonarQube — Cognitive Complexity Gate
     runs-on: ubuntu-latest
     needs: test
-    if: ${{ secrets.SONAR_TOKEN != '' }}
+    if: ${{ vars.SONAR_HOST_URL != '' }}
 
     steps:
       - uses: actions/checkout@v4
