@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import Float, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...outbound.db import get_db
@@ -115,7 +115,7 @@ async def summary(  # pylint: disable=too-many-locals
     )
     r = await db.execute(top_skills_q)
     top_skills = [
-        SkillCount(skill_name=row.skill_name or "unknown", count=row.count) for row in r
+        SkillCount(skill_name=row.skill_name or "unknown", count=int(row.count)) for row in r
     ]
 
     # Top models + cost
@@ -125,7 +125,7 @@ async def summary(  # pylint: disable=too-many-locals
                 Event.payload["model"].astext.label("model"),
                 func.count().label("count"),
                 func.coalesce(
-                    func.sum(Event.payload["estimated_cost_usd"].cast("float")), 0.0
+                    func.sum(Event.payload["estimated_cost_usd"].cast(Float)), 0.0
                 ).label("total_cost_usd"),
             ).where(Event.event_type == "skill.invoked")
         )
@@ -137,7 +137,7 @@ async def summary(  # pylint: disable=too-many-locals
     top_models = [
         ModelCount(
             model=row.model or "unknown",
-            count=row.count,
+            count=int(row.count),
             total_cost_usd=row.total_cost_usd or 0.0,
         )
         for row in r
