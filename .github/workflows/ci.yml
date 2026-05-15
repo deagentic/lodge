@@ -21,7 +21,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install cornerstone
-        run: pip install git+https://${{ secrets.GH_PAT }}@github.com/deagentic/cornerstone.git
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
       - name: Run gitflow-gate
         run: cornerstone gitflow-gate
 
@@ -37,7 +39,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install cornerstone
-        run: pip install git+https://${{ secrets.GH_PAT }}@github.com/deagentic/cornerstone.git
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
       - name: Run semver-gate
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -59,7 +63,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install cornerstone
-        run: pip install git+https://${{ secrets.GH_PAT }}@github.com/deagentic/cornerstone.git
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
       - name: Run commit-gate
         run: cornerstone commit-gate --message "${{ github.event.head_commit.message }}"
 
@@ -71,7 +77,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install cornerstone
-        run: pip install git+https://${{ secrets.GH_PAT }}@github.com/deagentic/cornerstone.git
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: pip install git+https://x-access-token:${GH_PAT}@github.com/deagentic/cornerstone.git
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
