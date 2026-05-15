@@ -23,9 +23,9 @@ def get_healthz(client, ctx):
 
 @then("the response status code should be 200")
 def status_200(ctx):
-    assert ctx["response"].status_code == 200, (
-        f"Expected 200, got {ctx['response'].status_code}. Body: {ctx['response'].text}"
-    )
+    assert (
+        ctx["response"].status_code == 200
+    ), f"Expected 200, got {ctx['response'].status_code}. Body: {ctx['response'].text}"
 
 
 @then('the response body should contain a "status" field')

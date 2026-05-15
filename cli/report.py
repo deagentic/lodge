@@ -36,7 +36,9 @@ def _get(url: str, params: dict[str, str]) -> dict[str, Any]:
     query = "&".join(f"{k}={v}" for k, v in params.items() if v)
     full_url = f"{url}?{query}" if query else url
     try:
-        with urllib.request.urlopen(full_url, timeout=10) as resp:  # nosec B310  # URL sourced from config/env, not user input
+        with urllib.request.urlopen(
+            full_url, timeout=10
+        ) as resp:  # nosec B310  # URL sourced from config/env, not user input
             return json.loads(resp.read())
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", errors="replace")
@@ -199,9 +201,7 @@ def cmd_cost(args) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        prog="lodge", description="Lodge CLI"
-    )
+    parser = argparse.ArgumentParser(prog="lodge", description="Lodge CLI")
     sub = parser.add_subparsers(dest="command")
 
     # report

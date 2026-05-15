@@ -14,7 +14,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.execute("""
+    op.execute(
+        """
         CREATE TABLE IF NOT EXISTS events (
             id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             event_type      TEXT NOT NULL,
@@ -25,7 +26,8 @@ def upgrade() -> None:
             event_ts        TIMESTAMPTZ NOT NULL,
             payload         JSONB NOT NULL
         )
-    """)
+    """
+    )
 
     op.execute(
         "CREATE INDEX IF NOT EXISTS idx_events_event_type   ON events (event_type)"
@@ -40,7 +42,8 @@ def upgrade() -> None:
         "CREATE INDEX IF NOT EXISTS idx_events_type_project ON events (event_type, project_slug)"
     )
 
-    op.execute("""
+    op.execute(
+        """
         CREATE MATERIALIZED VIEW IF NOT EXISTS mv_summary AS
         SELECT
             project_slug,
@@ -51,12 +54,15 @@ def upgrade() -> None:
                 FILTER (WHERE event_type = 'skill.invoked') AS daily_cost_usd
         FROM events
         GROUP BY project_slug, event_type, day
-    """)
+    """
+    )
 
-    op.execute("""
+    op.execute(
+        """
         CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_summary_pk
         ON mv_summary (project_slug, event_type, day)
-    """)
+    """
+    )
 
 
 def downgrade() -> None:

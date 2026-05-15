@@ -15,7 +15,12 @@ AGENTIC_TELEMETRY_URL is not set.
 """
 
 from .client import is_telemetry_enabled, send_event
-from .decorators import skill_span, tool_span, track_knowledge_created, track_knowledge_used
+from .decorators import (
+    skill_span,
+    tool_span,
+    track_knowledge_created,
+    track_knowledge_used,
+)
 from .otel import setup_otel_if_available
 
 __all__ = [

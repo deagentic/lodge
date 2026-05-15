@@ -31,45 +31,57 @@ class DLLUnpacker:
             return False
 
     def _extract_version_info(self, pe, out_dir):
-        if hasattr(pe, 'VS_FIXEDFILEINFO'):
+        if hasattr(pe, "VS_FIXEDFILEINFO"):
             info = pe.VS_FIXEDFILEINFO[0]
             with open(out_dir / "version_info.txt", "w") as f:
-                f.write(f"File version: {info.FileVersionMS >> 16}.{info.FileVersionMS & 0xFFFF}\n")
-                f.write(f"Product version: {info.ProductVersionMS >> 16}.{info.ProductVersionMS & 0xFFFF}\n")
+                f.write(
+                    f"File version: {info.FileVersionMS >> 16}.{info.FileVersionMS & 0xFFFF}\n"
+                )
+                f.write(
+                    f"Product version: {info.ProductVersionMS >> 16}.{info.ProductVersionMS & 0xFFFF}\n"
+                )
 
-    def _extract_resource_data(self, pe, resource_lang, type_name, resource_id, res_dir):
-        data = pe.get_data(resource_lang.data.struct.OffsetToData, resource_lang.data.struct.Size)
+    def _extract_resource_data(
+        self, pe, resource_lang, type_name, resource_id, res_dir
+    ):
+        data = pe.get_data(
+            resource_lang.data.struct.OffsetToData, resource_lang.data.struct.Size
+        )
         file_name = f"res_{type_name}_{resource_id.id}.bin"
         with open(res_dir / file_name, "wb") as f:
             f.write(data)
 
     def _extract_resource_entry(self, pe, resource_type, res_dir):
         type_name = pefile.RESOURCE_TYPE.get(resource_type.id, resource_type.id)
-        if not hasattr(resource_type, 'directory'):
+        if not hasattr(resource_type, "directory"):
             return
         for resource_id in resource_type.directory.entries:
-            if not hasattr(resource_id, 'directory'):
+            if not hasattr(resource_id, "directory"):
                 continue
             for resource_lang in resource_id.directory.entries:
-                self._extract_resource_data(pe, resource_lang, type_name, resource_id, res_dir)
+                self._extract_resource_data(
+                    pe, resource_lang, type_name, resource_id, res_dir
+                )
 
     def _extract_resources(self, pe, out_dir):
         res_dir = out_dir / "resources"
         res_dir.mkdir(exist_ok=True)
-        if not hasattr(pe, 'DIRECTORY_ENTRY_RESOURCE'):
+        if not hasattr(pe, "DIRECTORY_ENTRY_RESOURCE"):
             return
         for resource_type in pe.DIRECTORY_ENTRY_RESOURCE.entries:
             self._extract_resource_entry(pe, resource_type, res_dir)
 
     def _extract_exports(self, pe, f):
         f.write("--- EXPORTS ---\n")
-        if hasattr(pe, 'DIRECTORY_ENTRY_EXPORT'):
+        if hasattr(pe, "DIRECTORY_ENTRY_EXPORT"):
             for exp in pe.DIRECTORY_ENTRY_EXPORT.symbols:
-                f.write(f"{exp.name.decode() if exp.name else 'ordinal ' + str(exp.ordinal)}\n")
+                f.write(
+                    f"{exp.name.decode() if exp.name else 'ordinal ' + str(exp.ordinal)}\n"
+                )
 
     def _extract_imports(self, pe, f):
         f.write("\n--- IMPORTS ---\n")
-        if hasattr(pe, 'DIRECTORY_ENTRY_IMPORT'):
+        if hasattr(pe, "DIRECTORY_ENTRY_IMPORT"):
             for entry in pe.DIRECTORY_ENTRY_IMPORT:
                 f.write(f"Library: {entry.dll.decode()}\n")
                 for imp in entry.symbols:

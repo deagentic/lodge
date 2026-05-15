@@ -115,7 +115,10 @@ async def summary(  # pylint: disable=too-many-locals
     )
     r = await db.execute(top_skills_q)
     top_skills = [
-        SkillCount(skill_name=row.skill_name or "unknown", count=typing_cast(int, row.count)) for row in r
+        SkillCount(
+            skill_name=row.skill_name or "unknown", count=typing_cast(int, row.count)
+        )
+        for row in r
     ]
 
     # Top models + cost

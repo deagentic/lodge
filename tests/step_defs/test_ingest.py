@@ -49,9 +49,9 @@ def post_event(client, ctx):
 
 @then("the response status code should be 202")
 def status_202(ctx):
-    assert ctx["response"].status_code == 202, (
-        f"Expected 202, got {ctx['response'].status_code}. Body: {ctx['response'].text}"
-    )
+    assert (
+        ctx["response"].status_code == 202
+    ), f"Expected 202, got {ctx['response'].status_code}. Body: {ctx['response'].text}"
 
 
 @then('the response body should contain an "id" field')
@@ -62,13 +62,13 @@ def body_has_id(ctx):
 
 @then("the response status code should be 400")
 def status_400(ctx):
-    assert ctx["response"].status_code == 400, (
-        f"Expected 400, got {ctx['response'].status_code}. Body: {ctx['response'].text}"
-    )
+    assert (
+        ctx["response"].status_code == 400
+    ), f"Expected 400, got {ctx['response'].status_code}. Body: {ctx['response'].text}"
 
 
 @then("the response status code should be 422")
 def status_422(ctx):
-    assert ctx["response"].status_code == 422, (
-        f"Expected 422, got {ctx['response'].status_code}. Body: {ctx['response'].text}"
-    )
+    assert (
+        ctx["response"].status_code == 422
+    ), f"Expected 422, got {ctx['response'].status_code}. Body: {ctx['response'].text}"

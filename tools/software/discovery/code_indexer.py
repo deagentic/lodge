@@ -9,12 +9,14 @@ from datasketch import MinHash
 
 def tokenize(text):
     text = text.lower()
-    text = re.sub(r'#.*', '', text)
-    text = re.sub(r'//.*', '', text)
-    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
-    text = re.sub(r'\s+', '', text)
+    text = re.sub(r"#.*", "", text)
+    text = re.sub(r"//.*", "", text)
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+    text = re.sub(r"\s+", "", text)
     n = 5
-    return [text[i:i+n] for i in range(len(text)-n+1)] if len(text) > n else [text]
+    return (
+        [text[i : i + n] for i in range(len(text) - n + 1)] if len(text) > n else [text]
+    )
 
 
 class CodeIndexer:
@@ -28,7 +30,8 @@ class CodeIndexer:
         self._setup_db()
 
     def _setup_db(self):
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS files (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 path TEXT UNIQUE,
@@ -39,7 +42,8 @@ class CodeIndexer:
                 minhash BLOB,
                 project_root TEXT
             )
-        """)
+        """
+        )
         self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_hash ON files(hash)")
         self.conn.commit()
 
@@ -47,16 +51,16 @@ class CodeIndexer:
         hasher = hashlib.sha256()
         m = MinHash(num_perm=self.num_perm)
         try:
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 content_bytes = f.read()
                 hasher.update(content_bytes)
 
                 # Fingerprint
                 try:
-                    text = content_bytes.decode('utf-8', errors='ignore')
+                    text = content_bytes.decode("utf-8", errors="ignore")
                     tokens = tokenize(text)
                     for token in tokens:
-                        m.update(token.encode('utf-8'))
+                        m.update(token.encode("utf-8"))
                 except Exception:  # nosec B110  # best-effort: tokenization optional
                     pass
 
@@ -70,10 +74,21 @@ class CodeIndexer:
             return False
 
         try:
-            self.cursor.execute("""
+            self.cursor.execute(
+                """
                 INSERT OR REPLACE INTO files (path, filename, extension, size, hash, minhash, project_root)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (str(path), file, path.suffix, path.stat().st_size, file_hash, sqlite3.Binary(minhash_blob), project_name))
+            """,
+                (
+                    str(path),
+                    file,
+                    path.suffix,
+                    path.stat().st_size,
+                    file_hash,
+                    sqlite3.Binary(minhash_blob),
+                    project_name,
+                ),
+            )
             return True
         except Exception as e:
             print(f"Error indexing {path}: {e}")
@@ -96,20 +111,28 @@ class CodeIndexer:
         print(f"Finished indexing {project_name}. Total files: {files_indexed}")
 
     def get_duplicate_stats(self):
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
             SELECT hash, COUNT(*), GROUP_CONCAT(path, '|')
             FROM files
             GROUP BY hash
             HAVING COUNT(*) > 1
-        """)
+        """
+        )
         return self.cursor.fetchall()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Index codebase into SQLite for high-speed analysis.")
+    parser = argparse.ArgumentParser(
+        description="Index codebase into SQLite for high-speed analysis."
+    )
     parser.add_argument("path", help="Path to index")
     parser.add_argument("--project", default="default", help="Project label")
-    parser.add_argument("--db", default=None, help="Database path (defaults to output/analysis_dbs/codebase_index.db)")
+    parser.add_argument(
+        "--db",
+        default=None,
+        help="Database path (defaults to output/analysis_dbs/codebase_index.db)",
+    )
 
     args = parser.parse_args()
     indexer = CodeIndexer(args.db)

@@ -7,12 +7,23 @@ class SQLLogicParser:
     def __init__(self):
         # Patterns for extraction
         self.patterns = {
-            "insert_target": re.compile(r'INSERT\s+INTO\s+([\w\.\[\]]+)', re.IGNORECASE),
-            "select_clause": re.compile(r'SELECT\s+(.*?)\s+FROM', re.IGNORECASE | re.DOTALL),
-            "where_clause": re.compile(r'WHERE\s+(.*?)($|GROUP|ORDER|HAVING)', re.IGNORECASE | re.DOTALL),
-            "joins": re.compile(r'(?:INNER|LEFT|RIGHT|FULL)?\s+JOIN\s+([\w\.\[\]]+)\s+ON\s+(.*?)(?=INNER|LEFT|RIGHT|FULL|JOIN|WHERE|GROUP|ORDER|$)', re.IGNORECASE | re.DOTALL),
-            "case_logic": re.compile(r'(CASE\s+.*?END)', re.IGNORECASE | re.DOTALL),
-            "math_ops": re.compile(r'([\w\.\[\]]+\s*[\+\-\*/]\s*[\w\.\[\]]+)', re.IGNORECASE)
+            "insert_target": re.compile(
+                r"INSERT\s+INTO\s+([\w\.\[\]]+)", re.IGNORECASE
+            ),
+            "select_clause": re.compile(
+                r"SELECT\s+(.*?)\s+FROM", re.IGNORECASE | re.DOTALL
+            ),
+            "where_clause": re.compile(
+                r"WHERE\s+(.*?)($|GROUP|ORDER|HAVING)", re.IGNORECASE | re.DOTALL
+            ),
+            "joins": re.compile(
+                r"(?:INNER|LEFT|RIGHT|FULL)?\s+JOIN\s+([\w\.\[\]]+)\s+ON\s+(.*?)(?=INNER|LEFT|RIGHT|FULL|JOIN|WHERE|GROUP|ORDER|$)",
+                re.IGNORECASE | re.DOTALL,
+            ),
+            "case_logic": re.compile(r"(CASE\s+.*?END)", re.IGNORECASE | re.DOTALL),
+            "math_ops": re.compile(
+                r"([\w\.\[\]]+\s*[\+\-\*/]\s*[\w\.\[\]]+)", re.IGNORECASE
+            ),
         }
 
     def parse(self, sql_content):
@@ -21,7 +32,7 @@ class SQLLogicParser:
             "fields": [],
             "filters": [],
             "joins": [],
-            "complex_logic": []
+            "complex_logic": [],
         }
 
         # 1. Target Table
@@ -40,17 +51,24 @@ class SQLLogicParser:
             # Clean up the where clause
             raw_filters = where_match.group(1).strip()
             # Split by AND/OR while preserving context (simplistic)
-            logic["filters"] = [f.strip() for f in re.split(r'\bAND\b|\bOR\b', raw_filters, flags=re.IGNORECASE)]
+            logic["filters"] = [
+                f.strip()
+                for f in re.split(r"\bAND\b|\bOR\b", raw_filters, flags=re.IGNORECASE)
+            ]
 
         # 4. Complex Transformations (CASE, Math)
-        logic["complex_logic"] = [c.strip() for c in self.patterns["case_logic"].findall(sql_content)]
+        logic["complex_logic"] = [
+            c.strip() for c in self.patterns["case_logic"].findall(sql_content)
+        ]
 
         return logic
 
     def generate_spec(self, proc_name, logic):
         spec = f"# Logic Specification: {proc_name}\n\n"
         spec += "## 1. Objective\n"
-        spec += f"Ingest and transform data into `{logic['target'] or 'Result Set'}`.\n\n"
+        spec += (
+            f"Ingest and transform data into `{logic['target'] or 'Result Set'}`.\n\n"
+        )
 
         if logic["joins"]:
             spec += "## 2. Data Sources & Joins\n"
@@ -78,7 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("file")
     args = parser.parse_args()
 
-    with open(args.file, 'r', encoding='utf-8', errors='ignore') as f:
+    with open(args.file, "r", encoding="utf-8", errors="ignore") as f:
         content = f.read()
         p = SQLLogicParser()
         logic = p.parse(content)

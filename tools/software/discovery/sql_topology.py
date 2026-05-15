@@ -71,12 +71,33 @@ def print_roots(db_path, limit=10):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Query SQL topology from the codebase index DB.")
-    parser.add_argument("--db", default="output/analysis_dbs/codebase_index.db", help="Path to the SQLite DB.")
-    parser.add_argument("--leaves", action="store_true", help="Show leaf procedures (those that don't call other procedures).")
-    parser.add_argument("--roots", action="store_true", help="Show root procedures (those that call the most other procedures).")
-    parser.add_argument("--limit", type=int, default=10, help="Number of results to return.")
-    parser.add_argument("--max-lines", type=int, default=None, help="Maximum line count (useful for finding small leaves).")
+    parser = argparse.ArgumentParser(
+        description="Query SQL topology from the codebase index DB."
+    )
+    parser.add_argument(
+        "--db",
+        default="output/analysis_dbs/codebase_index.db",
+        help="Path to the SQLite DB.",
+    )
+    parser.add_argument(
+        "--leaves",
+        action="store_true",
+        help="Show leaf procedures (those that don't call other procedures).",
+    )
+    parser.add_argument(
+        "--roots",
+        action="store_true",
+        help="Show root procedures (those that call the most other procedures).",
+    )
+    parser.add_argument(
+        "--limit", type=int, default=10, help="Number of results to return."
+    )
+    parser.add_argument(
+        "--max-lines",
+        type=int,
+        default=None,
+        help="Maximum line count (useful for finding small leaves).",
+    )
 
     args = parser.parse_args()
 

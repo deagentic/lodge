@@ -116,4 +116,8 @@ async def dashboard_auth_middleware(request, call_next):
     return await call_next(request)
 
 
-app.mount("/", StaticFiles(directory=str(_PROJECT_ROOT / "dashboard" / "static"), html=True), name="dashboard")
+app.mount(
+    "/",
+    StaticFiles(directory=str(_PROJECT_ROOT / "dashboard" / "static"), html=True),
+    name="dashboard",
+)

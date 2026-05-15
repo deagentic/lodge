@@ -43,7 +43,9 @@ def setup_otel_if_available(service_name: str = "cornerstone") -> bool:
         return False
 
     try:
-        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+            OTLPSpanExporter,
+        )
 
         resource = Resource.create({"service.name": service_name})
         provider = TracerProvider(resource=resource)
@@ -60,15 +62,21 @@ def setup_otel_if_available(service_name: str = "cornerstone") -> bool:
 def _instrument_llm_providers() -> None:
     """Attempt to instrument known LLM SDKs via OpenLLMetry."""
     _try_instrument("opentelemetry.instrumentation.anthropic", "AnthropicInstrumentor")
-    _try_instrument("opentelemetry.instrumentation.google_generativeai", "GoogleGenerativeAIInstrumentor")
+    _try_instrument(
+        "opentelemetry.instrumentation.google_generativeai",
+        "GoogleGenerativeAIInstrumentor",
+    )
     _try_instrument("opentelemetry.instrumentation.openai", "OpenAIInstrumentor")
 
 
 def _try_instrument(module_path: str, class_name: str) -> None:
     try:
         import importlib
+
         module = importlib.import_module(module_path)
         instrumentor_cls = getattr(module, class_name)
         instrumentor_cls().instrument()
-    except Exception:  # nosec B110  # best-effort: instrumentation optional  # noqa: BLE001
+    except (
+        Exception
+    ):  # nosec B110  # best-effort: instrumentation optional  # noqa: BLE001
         pass

@@ -22,7 +22,7 @@ class KedroLineageBuilder:
 
     def _get_logic_summary(self, proc_path):
         try:
-            with open(proc_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(proc_path, "r", encoding="utf-8", errors="ignore") as f:
                 return summarize_sql(f.read())
         except Exception:  # nosec B110  # best-effort: SQL summary optional
             return "Procedural Logic"
@@ -30,7 +30,7 @@ class KedroLineageBuilder:
     def _get_raw_sql(self, p_path):
         if p_path and os.path.exists(p_path):
             try:
-                with open(p_path, 'r', encoding='utf-8', errors='ignore') as sql_f:
+                with open(p_path, "r", encoding="utf-8", errors="ignore") as sql_f:
                     return sql_f.read().replace("'''", "''''")  # Escape triple quotes
             except Exception:  # nosec B110  # best-effort: raw SQL read optional
                 pass
@@ -41,7 +41,9 @@ class KedroLineageBuilder:
             yaml.dump(catalog, f, default_flow_style=False)
 
     def _write_pipeline(self, pipeline_map, proc_info, output_dir):
-        with open(os.path.join(output_dir, "pipeline_dag.py"), "w", encoding='utf-8') as f:
+        with open(
+            os.path.join(output_dir, "pipeline_dag.py"), "w", encoding="utf-8"
+        ) as f:
             f.write("from kedro.pipeline import Pipeline, node, pipeline\n\n")
             f.write("def create_pipeline(**kwargs) -> Pipeline:\n")
             f.write("    return pipeline([\n")
@@ -54,11 +56,15 @@ class KedroLineageBuilder:
                 raw_sql = self._get_raw_sql(proc_info.get(proc))
 
                 f.write("        node(\n")
-                f.write("            func=lambda *x: None, # Transformation logic below\n")
+                f.write(
+                    "            func=lambda *x: None, # Transformation logic below\n"
+                )
                 f.write(f"            inputs={inputs},\n")
                 f.write(f"            outputs={outputs},\n")
                 f.write(f"            name='{proc}',\n")
-                f.write(f"            doc='''\nLOGIC SUMMARY: {data['summary']}\n\nSOURCE SQL:\n{raw_sql}\n'''\n")
+                f.write(
+                    f"            doc='''\nLOGIC SUMMARY: {data['summary']}\n\nSOURCE SQL:\n{raw_sql}\n'''\n"
+                )
                 f.write("        ),\n")
             f.write("    ])\n")
 
@@ -74,24 +80,37 @@ class KedroLineageBuilder:
 
             for proc_name, proc_path in proc_info.items():
                 if proc_name not in pipeline_map:
-                    pipeline_map[proc_name] = {"inputs": set(), "outputs": set(), "summary": self._get_logic_summary(proc_path)}
+                    pipeline_map[proc_name] = {
+                        "inputs": set(),
+                        "outputs": set(),
+                        "summary": self._get_logic_summary(proc_path),
+                    }
 
-            self.cursor.execute("SELECT caller_path, dependency_name, direction FROM sql_dependencies WHERE dependency_type = 'TABLE/VIEW'")
+            self.cursor.execute(
+                "SELECT caller_path, dependency_name, direction FROM sql_dependencies WHERE dependency_type = 'TABLE/VIEW'"
+            )
             for caller_path, dep_name, direction in self.cursor.fetchall():
-                p_name = next((name for name, path in proc_info.items() if path == caller_path), caller_path)
+                p_name = next(
+                    (name for name, path in proc_info.items() if path == caller_path),
+                    caller_path,
+                )
 
                 if p_name not in pipeline_map:
-                    pipeline_map[p_name] = {"inputs": set(), "outputs": set(), "summary": "Unknown"}
+                    pipeline_map[p_name] = {
+                        "inputs": set(),
+                        "outputs": set(),
+                        "summary": "Unknown",
+                    }
 
-                clean_dep = dep_name.replace('[', '').replace(']', '').replace('.', '_')
-                if direction == 'INPUT':
+                clean_dep = dep_name.replace("[", "").replace("]", "").replace(".", "_")
+                if direction == "INPUT":
                     pipeline_map[p_name]["inputs"].add(clean_dep)
                 else:
                     pipeline_map[p_name]["outputs"].add(clean_dep)
 
                 catalog[clean_dep] = {
                     "type": "pandas.CSVDataset",
-                    "filepath": f"data/01_raw/{clean_dep}.csv"
+                    "filepath": f"data/01_raw/{clean_dep}.csv",
                 }
 
             self._write_catalog(catalog, output_dir)
@@ -104,7 +123,9 @@ class KedroLineageBuilder:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("db", help="Path to logic database")
-    parser.add_argument("--out", default="output/kedro_mapping", help="Output directory")
+    parser.add_argument(
+        "--out", default="output/kedro_mapping", help="Output directory"
+    )
     args = parser.parse_args()
 
     builder = KedroLineageBuilder(args.db)

@@ -13,12 +13,15 @@ from typing import Any, Optional
 
 
 def _now_utc() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    return (
+        datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    )
 
 
 # ---------------------------------------------------------------------------
 # Envelope
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class EventEnvelope:
@@ -36,6 +39,7 @@ class EventEnvelope:
 # ---------------------------------------------------------------------------
 # Payload helpers
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class ProjectGeneratedPayload:
@@ -94,6 +98,7 @@ class KnowledgeUsedPayload:
 # ---------------------------------------------------------------------------
 # Factory functions
 # ---------------------------------------------------------------------------
+
 
 def make_event(
     event_type: str,

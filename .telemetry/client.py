@@ -31,6 +31,7 @@ def _base_url() -> str:
 def _debug(msg: str) -> None:
     if os.environ.get(_DEBUG_VAR):
         import sys
+
         print(f"[agentic-telemetry] {msg}", file=sys.stderr)
 
 
@@ -54,7 +55,9 @@ def send_event(event: dict[str, Any]) -> None:
                 data=data,
                 headers={"Content-Type": "application/json"},
             )
-            with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS):  # nosec B310  # URL sourced from config/env, not user input
+            with urllib.request.urlopen(
+                req, timeout=_TIMEOUT_SECONDS
+            ):  # nosec B310  # URL sourced from config/env, not user input
                 pass
             _debug(f"sent {event.get('event_type')} for {event.get('project_slug')}")
         except Exception as exc:  # noqa: BLE001

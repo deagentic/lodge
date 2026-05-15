@@ -48,7 +48,9 @@ async def ingest_event(
     try:
         await db.execute(text("REFRESH MATERIALIZED VIEW CONCURRENTLY mv_summary"))
         await db.commit()
-    except Exception:  # nosec B110  # best-effort refresh  # pylint: disable=broad-exception-caught
+    except (
+        Exception
+    ):  # nosec B110  # best-effort refresh  # pylint: disable=broad-exception-caught
         pass
 
     return IngestEventResponse(id=event.id)
