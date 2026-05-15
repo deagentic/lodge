@@ -4,15 +4,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-lodge_db}
-      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_DB: ${POSTGRES_DB:-lodge}
+      POSTGRES_USER: ${POSTGRES_USER:-lodge}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appuser} -d ${POSTGRES_DB:-lodge_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lodge} -d ${POSTGRES_DB:-lodge}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,24 +20,46 @@ services:
   lodge:
     build: .
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-appuser}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lodge_db}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-lodge}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-lodge}
+      IDP_PROVIDER: ${IDP_PROVIDER:-github}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_GATEWAY_REPO: ${GITHUB_GATEWAY_REPO:-deagentic/crisol-gateway}
+      MCP_SERVER_ENABLED: ${MCP_SERVER_ENABLED:-true}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
+      MONTHLY_BUDGET_USD: ${MONTHLY_BUDGET_USD:-}
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
+    # ADR-0002: migrations run before uvicorn; all surfaces served by lodge.server:app
     command: >
-      sh -c "alembic upgrade head && uvicorn lodge.adapters.inbound.api:app --host 0.0.0.0 --port 8000"
+      sh -c "alembic upgrade head &&
+             uvicorn lodge.server:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/v1/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
-  # Uncomment to enable the optional Grafana dashboard (requires port 3000)
+  # ── Optional: Grafana dashboard ──────────────────────────────────────────
+  # Uncomment to enable cost/telemetry visualizations backed by PostgreSQL.
   # grafana:
   #   build: dashboard/grafana
   #   environment:
-  #     GF_SECURITY_ADMIN_PASSWORD: admin
+  #     GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+  #     GF_DATABASE_TYPE: postgres
+  #     GF_DATABASE_HOST: postgres:5432
+  #     GF_DATABASE_NAME: ${POSTGRES_DB:-lodge}
+  #     GF_DATABASE_USER: ${POSTGRES_USER:-lodge}
+  #     GF_DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
   #   ports:
   #     - "3000:3000"
   #   depends_on:
-  #     - postgres
+  #     lodge:
+  #       condition: service_healthy
   #   volumes:
   #     - ./dashboard/grafana/provisioning:/etc/grafana/provisioning
 

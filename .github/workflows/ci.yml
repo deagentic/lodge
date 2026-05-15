@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "__PYTHON_VERSION__"
+          python-version: "3.11"
       - name: Install cornerstone
         run: pip install git+https://github.com/deagentic/cornerstone.git
       - name: Run gitflow-gate
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "__PYTHON_VERSION__"
+          python-version: "3.11"
       - name: Install cornerstone
         run: pip install git+https://github.com/deagentic/cornerstone.git
       - name: Run semver-gate
@@ -53,7 +53,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "__PYTHON_VERSION__"
+          python-version: "3.11"
       - name: Install cornerstone
         run: pip install git+https://github.com/deagentic/cornerstone.git
       - name: Run commit-gate
@@ -65,11 +65,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "{{ cookiecutter.python_version }}"
-
-      - name: Install cornerstone
-        run: pip install git+https://github.com/deagentic/cornerstone.git
-
+          python-version: "3.11"
       - name: Install cornerstone
         run: pip install git+https://github.com/deagentic/cornerstone.git
       - name: Install dependencies
