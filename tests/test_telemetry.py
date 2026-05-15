@@ -30,10 +30,10 @@ for mod in ["client", "cost_rates", "schema", "decorators", "otel"]:
 for mod in ["client", "cost_rates", "schema", "decorators", "otel"]:
     sys.modules[f"telemetry.{mod}"].__spec__.loader.exec_module(sys.modules[f"telemetry.{mod}"])
 
-import telemetry.client as client
-import telemetry.cost_rates as cost_rates
-import telemetry.decorators as decorators
-import telemetry.schema as schema
+import telemetry.client as client  # noqa: E402
+import telemetry.cost_rates as cost_rates  # noqa: E402
+import telemetry.decorators as decorators  # noqa: E402
+import telemetry.schema as schema  # noqa: E402
 
 def _reload_client(env: dict) -> object:
     with patch.dict("os.environ", env, clear=True):
