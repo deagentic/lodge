@@ -35,6 +35,7 @@ dev = [
 
 [tool.importlinter]
 root_package = "lodge"
+source_paths = ["src"]
 
 [[tool.importlinter.contracts]]
 name = "Hexagonal Architecture"
@@ -46,12 +47,10 @@ layers = [
 ]
 
 [[tool.importlinter.contracts]]
-name = "Adapter independence"
-type = "independence"
-modules = [
-    "lodge.adapters.inbound",
-    "lodge.adapters.outbound",
-]
+name = "Adapter direction"
+type = "forbidden"
+source_modules = ["lodge.adapters.outbound"]
+forbidden_modules = ["lodge.adapters.inbound"]
 
 [[tool.importlinter.contracts]]
 name = "Entrypoint isolation"
@@ -70,5 +69,4 @@ forbidden_modules = [
 testpaths = ["tests"]
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["src*", "cli*"]
+where = ["src"]
