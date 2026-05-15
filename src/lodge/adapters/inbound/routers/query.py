@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, cast as typing_cast
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import Float, func, select
@@ -115,7 +115,7 @@ async def summary(  # pylint: disable=too-many-locals
     )
     r = await db.execute(top_skills_q)
     top_skills = [
-        SkillCount(skill_name=row.skill_name or "unknown", count=int(row.count)) for row in r
+        SkillCount(skill_name=row.skill_name or "unknown", count=typing_cast(int, row.count)) for row in r
     ]
 
     # Top models + cost
@@ -137,7 +137,7 @@ async def summary(  # pylint: disable=too-many-locals
     top_models = [
         ModelCount(
             model=row.model or "unknown",
-            count=int(row.count),
+            count=typing_cast(int, row.count),
             total_cost_usd=row.total_cost_usd or 0.0,
         )
         for row in r
