@@ -2,7 +2,7 @@
 
 **L·O·D·G·E** — _Lifecycle · Orchestration · Distribution · Governance · Events_
 
-Lodge is the platform server for the **deAgentic ecosystem**. It is the "intendente de obra":
+Lodge is the platform server for the **Stoneworks ecosystem**. It is the "intendente de obra":
 the active coordinator that registers every project, enforces governance, tracks spend,
 manages RBAC, catalogs MCP servers, and broadcasts events to every actor that needs them.
 
